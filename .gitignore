@@ -1,6 +1,16 @@
+# Dependencias instaladas por npm
 node_modules/
+
+# Código compilado
 dist/
-coverage/
-*.tsbuildinfo
+
+# Variables de entorno (pueden contener secretos)
 .env
+.env.*
+!.env.example
+
+# Archivos que crea macOS en cada carpeta
 .DS_Store
+
+# Reportes de cobertura de tests
+coverage/
