@@ -14,3 +14,5 @@ dist/
 
 # Reportes de cobertura de tests
 coverage/
+
+*.tsbuildinfo
