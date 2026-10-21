@@ -1,0 +1,15 @@
+services: # es la lista de contenedores
+  tasks-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${TASK_DB_USER}
+      POSTGRES_PASSWORD: ${TASK_DB_PASSWORD}
+      POSTGRES_DB: ${TASK_DB_NAME}
+    volumes:
+      # conecta el volumen llamado 'tasks-db-data' a la carpeta '/var/lib/postgresql/data'
+      # del contenedor
+      - tasks-db-data:/var/lib/postgresql/data
+
+# declara que el volumen existe
+volumes:
+  tasks-db-data:
