@@ -9,7 +9,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import type { Task } from './task.interface';
+import { Task } from './task.entity';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -19,17 +19,17 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(): Task[] {
+  findAll(): Promise<Task[]> {
     return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Task {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
     return this.tasksService.findOne(id);
   }
 
   @Post()
-  create(@Body() dto: CreateTaskDto): Task {
+  create(@Body() dto: CreateTaskDto): Promise<Task> {
     return this.tasksService.create(dto);
   }
 
@@ -37,18 +37,18 @@ export class TasksController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateTaskDto,
-  ): Task {
+  ): Promise<Task> {
     return this.tasksService.update(id, dto);
   }
 
   @Patch(':id/complete')
-  complete(@Param('id', ParseUUIDPipe) id: string): Task {
+  complete(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
     return this.tasksService.complete(id);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseUUIDPipe) id: string): void {
-    this.tasksService.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.tasksService.remove(id);
   }
 }

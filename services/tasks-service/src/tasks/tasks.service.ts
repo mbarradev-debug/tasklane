@@ -1,62 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Task } from './task.interface';
-import { randomUUID } from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Task } from './task.entity';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [];
+  constructor(
+    @InjectRepository(Task) // pide el repositorio de Task
+    private readonly tasksRepository: Repository<Task>,
+  ) {}
 
-  findAll(): Task[] {
-    return this.tasks;
+  findAll(): Promise<Task[]> {
+    return this.tasksRepository.find({ order: { createdAt: 'ASC' } });
   }
 
-  create(dto: CreateTaskDto): Task {
-    const now = new Date();
-    const task: Task = {
-      id: randomUUID(),
-      title: dto.title,
-      description: dto.description ?? '',
-      completed: false,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.tasks.push(task);
-    return task;
-  }
-
-  findOne(id: string): Task {
-    const task = this.tasks.find((t) => t.id === id);
+  async findOne(id: string): Promise<Task> {
+    const task = await this.tasksRepository.findOneBy({ id });
     if (!task) {
       throw new NotFoundException(`Task ${id} not found`);
     }
     return task;
   }
 
-  update(id: string, dto: UpdateTaskDto): Task {
-    const task = this.findOne(id);
-    if (dto.title !== undefined) {
-      task.title = dto.title;
-    }
-    if (dto.description !== undefined) {
-      task.description = dto.description;
-    }
-    task.updatedAt = new Date();
-    return task;
+  create(dto: CreateTaskDto): Promise<Task> {
+    const task = this.tasksRepository.create({
+      title: dto.title,
+      description: dto.description ?? '',
+    });
+    return this.tasksRepository.save(task);
   }
 
-  complete(id: string): Task {
-    const task = this.findOne(id);
-    if (!task.completed) {
-      task.completed = true;
-      task.updatedAt = new Date();
-    }
-    return task;
+  async update(id: string, dto: UpdateTaskDto): Promise<Task> {
+    const task = await this.findOne(id);
+    if (dto.title !== undefined) task.title = dto.title;
+    if (dto.description !== undefined) task.description = dto.description; // "" es válido
+    return this.tasksRepository.save(task);
   }
 
-  remove(id: string): void {
-    const task = this.findOne(id);
-    this.tasks = this.tasks.filter((t) => t.id !== task.id);
+  async complete(id: string): Promise<Task> {
+    const task = await this.findOne(id);
+    if (task.completed) return task; // idempotente: ya estaba completada
+    task.completed = true;
+    return this.tasksRepository.save(task);
+  }
+
+  async remove(id: string): Promise<void> {
+    const task = await this.findOne(id);
+    await this.tasksRepository.remove(task);
   }
 }
