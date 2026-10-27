@@ -22,6 +22,28 @@ services: # es la lista de contenedores
     depends_on:
       - tasks-db
 
+  auth-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data # volumen propio, separado de tasks-db
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      AUTH_DB_HOST: auth-db # el nombre del servicio funciona como dirección
+      AUTH_DB_USER: ${AUTH_DB_USER}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      AUTH_DB_NAME: ${AUTH_DB_NAME}
+    depends_on:
+      - auth-db
+
 # declara que el volumen existe
 volumes:
   tasks-db-data:
+  auth-db-data:
