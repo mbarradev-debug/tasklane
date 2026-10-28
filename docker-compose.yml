@@ -9,6 +9,11 @@ services: # es la lista de contenedores
       # conecta el volumen llamado 'tasks-db-data' a la carpeta '/var/lib/postgresql/data'
       # del contenedor
       - tasks-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"] # ¿PostgreSQL acepta conexiones?
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
   tasks-service:
     build: ./services/tasks-service
@@ -20,7 +25,8 @@ services: # es la lista de contenedores
       TASKS_DB_PASSWORD: ${TASKS_DB_PASSWORD}
       TASKS_DB_NAME: ${TASKS_DB_NAME}
     depends_on:
-      - tasks-db
+      tasks-db:
+        condition: service_healthy # espera a que tasks-db pase su healthcheck
 
   auth-db:
     image: postgres:17-alpine
@@ -30,6 +36,11 @@ services: # es la lista de contenedores
       POSTGRES_DB: ${AUTH_DB_NAME}
     volumes:
       - auth-db-data:/var/lib/postgresql/data # volumen propio, separado de tasks-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"] # ¿PostgreSQL acepta conexiones?
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
   auth-service:
     build: ./services/auth-service
@@ -41,8 +52,15 @@ services: # es la lista de contenedores
       AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
       AUTH_DB_NAME: ${AUTH_DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"] # se llama a sí mismo
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     depends_on:
-      - auth-db
+      auth-db:
+        condition: service_healthy # espera a que auth-db pase su healthcheck
 
 # declara que el volumen existe
 volumes:
