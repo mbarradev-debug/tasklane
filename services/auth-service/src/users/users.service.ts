@@ -13,6 +13,10 @@ export class UsersService {
     return this.users.findOneBy({ email }); // SELECT * FROM users WHERE email = $1 LIMIT 1
   }
 
+  findById(id: string): Promise<User | null> {
+    return this.users.findOneBy({ id }); // SELECT ... FROM users WHERE id = $1 LIMIT 1
+  }
+
   create(data: {
     email: string;
     name: string;

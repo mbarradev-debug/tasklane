@@ -1,4 +1,12 @@
-import { Body, Controller, Post, HttpCode } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  UnauthorizedException,
+  Get,
+  Headers,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -17,5 +25,14 @@ export class AuthController {
   @HttpCode(200)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Get('me')
+  me(@Headers('authorization') authorization?: string) {
+    const [type, token] = authorization?.split(' ') ?? []; // "Bearer eyJ..." → ["Bearer", "eyJ..."]
+    if (type !== 'Bearer' || !token) {
+      throw new UnauthorizedException('Missing token'); // sin header o con formato incorrecto
+    }
+    return this.authService.me(token);
   }
 }

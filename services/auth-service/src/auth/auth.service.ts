@@ -54,4 +54,18 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload);
     return { accessToken };
   }
+
+  async me(token: string) {
+    let payload: { sub: string; email: string };
+    try {
+      payload = await this.jwtService.verifyAsync(token); // recalcula la firma con JWT_SECRET y revisa exp
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const user = await this.usersService.findById(payload.sub); // sub = id en la tabla users
+    if (!user) throw new UnauthorizedException('Invalid token'); // token válido, pero el usuario ya no existe
+
+    return { id: user.id, email: user.email, name: user.name };
+  }
 }
