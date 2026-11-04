@@ -19,12 +19,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../auth/authenticated-request.interface';
 
 @Controller('tasks')
+@UseGuards(JwtAuthGuard) // todas las rutas de TaskController quedan protegidas
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(): Promise<Task[]> {
-    return this.tasksService.findAll();
+  findAll(@Req() req: AuthenticatedRequest): Promise<Task[]> {
+    return this.tasksService.findAll(req.user.sub);
   }
 
   @Get(':id')
@@ -32,8 +33,6 @@ export class TasksController {
     return this.tasksService.findOne(id);
   }
 
-  @Post()
-  @UseGuards(JwtAuthGuard)
   create(
     @Body() dto: CreateTaskDto,
     @Req() req: AuthenticatedRequest,

@@ -12,8 +12,8 @@ export class TasksService {
     private readonly tasksRepository: Repository<Task>,
   ) {}
 
-  findAll(): Promise<Task[]> {
-    return this.tasksRepository.find({ order: { createdAt: 'ASC' } });
+  findAll(ownerId: string): Promise<Task[]> {
+    return this.tasksRepository.find({ where: { ownerId } });
   }
 
   async findOne(id: string): Promise<Task> {
