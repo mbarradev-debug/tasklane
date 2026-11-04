@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Task } from './task.entity';
@@ -15,6 +16,7 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { AuthenticatedRequest } from '../auth/authenticated-request.interface';
 
 @Controller('tasks')
 export class TasksController {
@@ -31,9 +33,12 @@ export class TasksController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard) // el guardia queda en esta puerta
-  create(@Body() dto: CreateTaskDto): Promise<Task> {
-    return this.tasksService.create(dto);
+  @UseGuards(JwtAuthGuard)
+  create(
+    @Body() dto: CreateTaskDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Task> {
+    return this.tasksService.create(dto, req.user.sub); // el dueño sale del token verificado
   }
 
   @Patch(':id')

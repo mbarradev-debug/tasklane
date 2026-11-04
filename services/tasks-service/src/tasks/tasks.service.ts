@@ -24,10 +24,12 @@ export class TasksService {
     return task;
   }
 
-  create(dto: CreateTaskDto): Promise<Task> {
+  create(dto: CreateTaskDto, ownerId: string): Promise<Task> {
+    // nuevo parámetro
     const task = this.tasksRepository.create({
       title: dto.title,
-      description: dto.description ?? '',
+      description: dto.description ?? '', // deja esta línea como la tengas
+      ownerId, // nuevo: abreviatura de "ownerId: ownerId"
     });
     return this.tasksRepository.save(task);
   }

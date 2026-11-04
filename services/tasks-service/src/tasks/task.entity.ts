@@ -1,3 +1,4 @@
+import { text } from 'stream/consumers';
 import {
   Column,
   CreateDateColumn,
@@ -19,6 +20,9 @@ export class Task {
 
   @Column({ default: false })
   completed: boolean;
+
+  @Column('uuid') // decorador de TypeORM: columna de tipo uuid, obligatoria (NOT NULL por defecto)
+  ownerId: string; // id del dueño en auth-db; sin llave foránea (es otra base)
 
   @CreateDateColumn()
   createdAt: Date;
