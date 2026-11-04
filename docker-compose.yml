@@ -14,6 +14,8 @@ services: # es la lista de contenedores
       interval: 2s
       timeout: 3s
       retries: 15
+    ports:
+      - "127.0.0.1:5434:5432" # DBeaver → localhost:5434 → tasks-db:5432
 
   tasks-service:
     build: ./services/tasks-service
@@ -42,6 +44,8 @@ services: # es la lista de contenedores
       interval: 2s
       timeout: 3s
       retries: 15
+    ports:
+      - "127.0.0.1:5433:5432" # DBeaver → localhost:5433 → auth-db:5432
 
   auth-service:
     build: ./services/auth-service
