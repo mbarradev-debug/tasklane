@@ -29,8 +29,11 @@ export class TasksController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
-    return this.tasksService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Task> {
+    return this.tasksService.findOne(id, req.user.sub);
   }
 
   create(
@@ -44,18 +47,25 @@ export class TasksController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateTaskDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<Task> {
-    return this.tasksService.update(id, dto);
+    return this.tasksService.update(id, dto, req.user.sub);
   }
 
   @Patch(':id/complete')
-  complete(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
-    return this.tasksService.complete(id);
+  complete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Task> {
+    return this.tasksService.complete(id, req.user.sub);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.tasksService.remove(id);
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    return this.tasksService.remove(id, req.user.sub);
   }
 }
