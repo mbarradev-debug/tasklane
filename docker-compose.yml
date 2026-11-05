@@ -27,6 +27,7 @@ services: # es la lista de contenedores
       TASKS_DB_PASSWORD: ${TASKS_DB_PASSWORD}
       TASKS_DB_NAME: ${TASKS_DB_NAME}
       JWT_SECRET: ${JWT_SECRET} # el mismo valor de .env que usa auth-service
+      AUTH_SERVICE_URL: http://auth-service:3001 # dirección de auth-service en la red de Compose
     depends_on:
       tasks-db:
         condition: service_healthy # espera a que tasks-db pase su healthcheck

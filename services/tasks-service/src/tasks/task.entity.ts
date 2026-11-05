@@ -24,6 +24,9 @@ export class Task {
   @Column('uuid') // decorador de TypeORM: columna de tipo uuid, obligatoria (NOT NULL por defecto)
   ownerId: string; // id del dueño en auth-db; sin llave foránea (es otra base)
 
+  @Column('uuid', { nullable: true })
+  assigneeId: string | null; // id del usuario asignado (de auth-service); null = sin asignar
+
   @CreateDateColumn()
   createdAt: Date;
 

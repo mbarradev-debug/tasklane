@@ -4,6 +4,7 @@ import { TasksService } from './tasks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { UsersClient } from '../users/users.client';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
   controllers: [TasksController],
-  providers: [TasksService],
+  providers: [TasksService, UsersClient],
 })
 export class TasksModule {}
