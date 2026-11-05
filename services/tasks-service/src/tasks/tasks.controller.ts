@@ -34,7 +34,7 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<Task> {
-    return this.tasksService.findOne(id, req.user.sub);
+    return this.tasksService.findAccessible(id, req.user.sub);
   }
 
   create(

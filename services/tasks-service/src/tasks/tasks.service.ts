@@ -18,16 +18,35 @@ export class TasksService {
     private readonly usersClient: UsersClient,
   ) {}
 
-  findAll(ownerId: string): Promise<Task[]> {
-    return this.tasksRepository.find({ where: { ownerId } });
+  findAll(userId: string): Promise<Task[]> {
+    // Arreglo en where = OR: las tareas que creó o que le asignaron
+    return this.tasksRepository.find({
+      where: [{ ownerId: userId }, { assigneeId: userId }],
+    });
   }
 
-  async findOne(id: string, ownerId: string): Promise<Task> {
+  // Búsqueda común: 404 si la tarea no existe
+  private async findTask(id: string): Promise<Task> {
     const task = await this.tasksRepository.findOneBy({ id });
     if (!task) {
       throw new NotFoundException(`Task ${id} not found`);
     }
-    if (task.ownerId !== ownerId) {
+    return task;
+  }
+
+  // Para ver y completar: dueño o asignado
+  async findAccessible(id: string, userId: string): Promise<Task> {
+    const task = await this.findTask(id);
+    if (task.ownerId !== userId && task.assigneeId !== userId) {
+      throw new ForbiddenException('You do not have access to this task');
+    }
+    return task;
+  }
+
+  // Para editar, borrar y reasignar: solo el dueño
+  private async findOwned(id: string, userId: string): Promise<Task> {
+    const task = await this.findTask(id);
+    if (task.ownerId !== userId) {
       throw new ForbiddenException('You do not own this task');
     }
     return task;
@@ -44,21 +63,21 @@ export class TasksService {
   }
 
   async update(id: string, dto: UpdateTaskDto, ownerId: string): Promise<Task> {
-    const task = await this.findOne(id, ownerId);
+    const task = await this.findOwned(id, ownerId);
     if (dto.title !== undefined) task.title = dto.title;
     if (dto.description !== undefined) task.description = dto.description; // "" es válido
     return this.tasksRepository.save(task);
   }
 
-  async complete(id: string, ownerId: string): Promise<Task> {
-    const task = await this.findOne(id, ownerId);
+  async complete(id: string, userId: string): Promise<Task> {
+    const task = await this.findAccessible(id, userId);
     if (task.completed) return task; // idempotente: ya estaba completada
     task.completed = true;
     return this.tasksRepository.save(task);
   }
 
   async assign(id: string, email: string, ownerId: string): Promise<Task> {
-    const task = await this.findOne(id, ownerId); // 404 si no existe, 403 si no es de quien pide
+    const task = await this.findOwned(id, ownerId); // 404 si no existe, 403 si no es de quien pide
 
     const assignee = await this.usersClient.findByEmail(email); // pregunta a auth-service
     if (!assignee) {
@@ -70,7 +89,7 @@ export class TasksService {
   }
 
   async remove(id: string, ownerId: string): Promise<void> {
-    const task = await this.findOne(id, ownerId);
+    const task = await this.findOwned(id, ownerId);
     await this.tasksRepository.remove(task);
   }
 }
