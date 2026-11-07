@@ -37,6 +37,7 @@ export class TasksController {
     return this.tasksService.findAccessible(id, req.user.sub);
   }
 
+  @Post()
   create(
     @Body() dto: CreateTaskDto,
     @Req() req: AuthenticatedRequest,
