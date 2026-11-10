@@ -7,7 +7,13 @@ interface Task {
   completed: boolean;
 }
 
-export default async function TasksPage() {
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -38,6 +44,29 @@ export default async function TasksPage() {
           </button>
         </form>
       </div>
+
+      {error === "invalid" && (
+        <p className="mb-4 rounded bg-red-50 px-3 py-2 text-red-700">
+          Could not create the task. Please check the title.
+        </p>
+      )}
+
+      <form method="POST" action="/api/tasks" className="mb-6 flex gap-2">
+        <input
+          type="text"
+          name="title"
+          required
+          placeholder="New task"
+          className="flex-1 rounded border px-3 py-2"
+        />
+        <button
+          type="submit"
+          className="rounded bg-black px-3 py-2 text-white hover:bg-gray-800"
+        >
+          Add
+        </button>
+      </form>
+
       {tasks.length === 0 ? (
         <p>You have no tasks yet.</p>
       ) : (
