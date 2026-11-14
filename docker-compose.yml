@@ -68,6 +68,19 @@ services: # es la lista de contenedores
       auth-db:
         condition: service_healthy # espera a que auth-db pase su healthcheck
 
+  web:
+    build: ./apps/web # usa apps/web/Dockerfile y apps/web/.dockerignore
+    ports:
+      - "3000:3000" # Chrome → localhost:3000 → web:3000
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:3001 # dentro de la red: nombre del servicio, no localhost
+      TASKS_SERVICE_URL: http://tasks-service:3002
+    depends_on:
+      auth-service:
+        condition: service_healthy # espera a que auth-service responda /health
+      tasks-service:
+        condition: service_started # no tiene healthcheck: basta con que haya arrancado
+
 # declara que el volumen existe
 volumes:
   tasks-db-data:
